@@ -1,13 +1,32 @@
-package main
+package logger
 
 import (
 	"github.com/kovetskiy/lorg"
 	"github.com/reconquest/karma-go"
 )
 
+type Sender func(lorg.Level, karma.Hierarchical) error
+type Displayer func(lorg.Level, karma.Hierarchical)
+
 // Logger provides structured logging methods, based on karma package.
 type Logger struct {
-	output *lorg.Log
+	*lorg.Log
+	sender    Sender
+	displayer Displayer
+}
+
+func NewLogger(output *lorg.Log) *Logger {
+	return &Logger{output, nil, nil}
+}
+
+// SetSender sets given function as callack for every log line
+func (logger *Logger) SetSender(sender Sender) {
+	logger.sender = sender
+}
+
+// SetDisplayer sets given function as callack when displays log line
+func (logger *Logger) SetDisplayer(display Displayer) {
+	logger.displayer = display
 }
 
 func (logger *Logger) Tracef(
@@ -15,7 +34,7 @@ func (logger *Logger) Tracef(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelTrace, context, message, args...)
+	logger.Write(lorg.LevelTrace, context, message, args...)
 }
 
 func (logger *Logger) Debugf(
@@ -23,7 +42,7 @@ func (logger *Logger) Debugf(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelDebug, context, message, args...)
+	logger.Write(lorg.LevelDebug, context, message, args...)
 }
 
 func (logger *Logger) Infof(
@@ -31,7 +50,7 @@ func (logger *Logger) Infof(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelInfo, context, message, args...)
+	logger.Write(lorg.LevelInfo, context, message, args...)
 }
 
 func (logger *Logger) Warningf(
@@ -39,7 +58,7 @@ func (logger *Logger) Warningf(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelWarning, err, message, args...)
+	logger.Write(lorg.LevelWarning, err, message, args...)
 }
 
 func (logger *Logger) Errorf(
@@ -47,7 +66,7 @@ func (logger *Logger) Errorf(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelError, err, message, args...)
+	logger.Write(lorg.LevelError, err, message, args...)
 }
 
 func (logger *Logger) Fatalf(
@@ -55,15 +74,19 @@ func (logger *Logger) Fatalf(
 	message string,
 	args ...interface{},
 ) {
-	logger.log(lorg.LevelFatal, err, message, args...)
+	logger.Write(lorg.LevelFatal, err, message, args...)
 }
 
-func (logger *Logger) log(
+func (logger *Logger) Write(
 	level lorg.Level,
 	reason interface{},
 	message string,
 	args ...interface{},
 ) {
+	if logger == nil {
+		return
+	}
+
 	var hierarchy karma.Karma
 
 	switch reason := reason.(type) {
@@ -78,25 +101,46 @@ func (logger *Logger) log(
 		hierarchy = karma.Format(reason, message, args...)
 	}
 
-	logger.send(level, hierarchy)
-	logger.display(level, hierarchy)
+	logger.Display(level, hierarchy)
+	err := logger.Send(level, hierarchy)
+	if err != nil {
+		logger.Display(
+			lorg.LevelError,
+			karma.Format(err, "error while sending log"),
+		)
+	}
 }
 
-func (logger *Logger) display(level lorg.Level, hierarchy karma.Hierarchical) {
+func (logger *Logger) Display(level lorg.Level, hierarchy karma.Hierarchical) {
+	if logger.displayer != nil {
+		logger.displayer(level, hierarchy)
+	} else {
+		Display(logger, level, hierarchy)
+	}
+}
+
+func (logger *Logger) Send(
+	level lorg.Level,
+	hierarchy karma.Hierarchical,
+) error {
+	if logger.sender != nil {
+		return logger.sender(level, hierarchy)
+	}
+
+	return nil
+}
+
+func Display(logger *Logger, level lorg.Level, hierarchy karma.Hierarchical) {
 	loggers := map[lorg.Level]func(...interface{}){
-		lorg.LevelTrace:   logger.output.Trace,
-		lorg.LevelDebug:   logger.output.Debug,
-		lorg.LevelInfo:    logger.output.Info,
-		lorg.LevelWarning: logger.output.Warning,
-		lorg.LevelError:   logger.output.Error,
-		lorg.LevelFatal:   logger.output.Fatal,
+		lorg.LevelTrace:   logger.Trace,
+		lorg.LevelDebug:   logger.Debug,
+		lorg.LevelInfo:    logger.Info,
+		lorg.LevelWarning: logger.Warning,
+		lorg.LevelError:   logger.Error,
+		lorg.LevelFatal:   logger.Fatal,
 	}
 
 	log := loggers[level]
 
 	log(hierarchy.String())
-}
-
-func (logger *Logger) send(level lorg.Level, hierarchy karma.Hierarchical) {
-	// TODO: Add ElasticSearch logger here.
 }
