@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/kovetskiy/lorg"
 	"github.com/reconquest/karma-go"
 )
@@ -143,4 +146,30 @@ func Display(logger *Logger, level lorg.Level, hierarchy karma.Hierarchical) {
 	log := loggers[level]
 
 	log(hierarchy.String())
+}
+
+func (logger *Logger) TraceJSON(obj interface{}) (encoded string) {
+	if logger.GetLevel() != lorg.LevelTrace {
+		return ""
+	}
+
+	defer func() {
+		err := recover()
+		if err != nil {
+			encoded = fmt.Sprintf(
+				"%#v (unable to encode to json: %s)",
+				obj, err,
+			)
+		}
+	}()
+
+	contents, err := json.MarshalIndent(obj, "", " ")
+	if err != nil {
+		return fmt.Sprintf(
+			"%#v (unable to encode to json: %s)",
+			obj, err,
+		)
+	}
+
+	return string(contents)
 }
