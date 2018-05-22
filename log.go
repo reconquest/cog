@@ -80,6 +80,42 @@ func (logger *Logger) Fatalf(
 	logger.Write(lorg.LevelFatal, err, message, args...)
 }
 
+func (logger *Logger) Trace(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelTrace, nil, fmt.Sprint(args...), nil)
+}
+
+func (logger *Logger) Debug(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelDebug, nil, fmt.Sprint(args...), nil)
+}
+
+func (logger *Logger) Info(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelInfo, nil, fmt.Sprint(args...), nil)
+}
+
+func (logger *Logger) Warning(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelWarning, nil, fmt.Sprint(args...), nil)
+}
+
+func (logger *Logger) Error(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelError, nil, fmt.Sprint(args...), nil)
+}
+
+func (logger *Logger) Fatal(
+	args ...interface{},
+) {
+	logger.Write(lorg.LevelFatal, nil, fmt.Sprint(args...), nil)
+}
+
 func (logger *Logger) Write(
 	level lorg.Level,
 	reason interface{},
