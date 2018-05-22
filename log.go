@@ -171,12 +171,12 @@ func (logger *Logger) Send(
 
 func Display(logger *Logger, level lorg.Level, hierarchy karma.Hierarchical) {
 	loggers := map[lorg.Level]func(...interface{}){
-		lorg.LevelTrace:   logger.Trace,
-		lorg.LevelDebug:   logger.Debug,
-		lorg.LevelInfo:    logger.Info,
-		lorg.LevelWarning: logger.Warning,
-		lorg.LevelError:   logger.Error,
-		lorg.LevelFatal:   logger.Fatal,
+		lorg.LevelTrace:   logger.Log.Trace,
+		lorg.LevelDebug:   logger.Log.Debug,
+		lorg.LevelInfo:    logger.Log.Info,
+		lorg.LevelWarning: logger.Log.Warning,
+		lorg.LevelError:   logger.Log.Error,
+		lorg.LevelFatal:   logger.Log.Fatal,
 	}
 
 	log := loggers[level]
