@@ -83,37 +83,37 @@ func (logger *Logger) Fatalf(
 func (logger *Logger) Trace(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelTrace, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelTrace, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Debug(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelDebug, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelDebug, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Info(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelInfo, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelInfo, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Warning(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelWarning, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelWarning, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Error(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelError, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelError, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Fatal(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelFatal, nil, fmt.Sprint(args...), nil)
+	logger.Write(lorg.LevelFatal, nil, "%s", fmt.Sprint(args...))
 }
 
 func (logger *Logger) Write(
