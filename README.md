@@ -1,25 +1,14 @@
-# Structured Log
+# cog
+
+<img src="https://liquipedia.net/commons/images/7/71/Clockwerk_power_cog.jpg" width="200px" />
 
 Package provides to structured log both for displaying it sanely in the stderr
-logs as well as writing key-valued logs into ElasticSearch:
-
-Using this package it's possible to use it with Goa as well and logs will be
-displayed in the stderr like this:
-
-```
-2017-09-21 18:58:19 [DEBUG] {goa} completed
-                            ├─ req_id: aIlGSFNnk8-1
-                            ├─ status: 200
-                            ├─ bytes: 134030
-                            ├─ time: 1.288885343s
-                            ├─ ctrl: MetricsController
-                            └─ action: get
-```
+logs as well as sending key-valued logs into any log storage such as ElasticSearch.
 
 To setup basic stderr logging, use following snippet in your `main.go`:
 
 ```go
-import "github.com/reconquest/structured-logger-go"
+import "github.com/reconquest/cog"
 
 // ...
 
@@ -33,7 +22,7 @@ if args["--debug"].(bool) {
     stderr.SetLevel(lorg.LevelDebug)
 }
 
-log = logger.NewLogger(stderr)
+log = cog.NewLogger(stderr)
 
 // use like that
 log.Infof(nil, "message to log: %d", 1)

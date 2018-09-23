@@ -1,4 +1,4 @@
-package logger
+package cog // import "github.com/reconquest/cog"
 
 import (
 	"encoding/json"
