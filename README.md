@@ -52,3 +52,7 @@ structured loggers:
 * Does not change ordering of key-values in the context.
 
 [1]: https://github.com/reconquest/karma-go/blob/f802f635edd15c647995280b90f7de3e84ca8999/karma_test.go
+
+# License
+
+This project is licensed under the terms of the MIT license.
