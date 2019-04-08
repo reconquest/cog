@@ -41,7 +41,7 @@ reporting, consider [looking at tests and examples][1].
 
 ## Motivation
 
-Following package offers significant improvenets above `logrus` and similar
+Following package offers significant improvements above `logrus` and similar
 structured loggers:
 
 * Readable tree-like log entries in stderr, which makes easy to debug program,
