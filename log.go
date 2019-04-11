@@ -8,6 +8,15 @@ import (
 	"github.com/reconquest/karma-go"
 )
 
+type wrapper struct {
+	error
+	*karma.Context
+}
+
+func WrapError(err error, context *karma.Context) error {
+	return wrapper{err, context}
+}
+
 type Sender func(lorg.Level, karma.Hierarchical) error
 type Displayer func(lorg.Level, karma.Hierarchical)
 
@@ -33,7 +42,7 @@ func (logger *Logger) SetDisplayer(display Displayer) {
 }
 
 func (logger *Logger) Tracef(
-	context *karma.Context,
+	context interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -41,7 +50,7 @@ func (logger *Logger) Tracef(
 }
 
 func (logger *Logger) Debugf(
-	context *karma.Context,
+	context interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -49,7 +58,7 @@ func (logger *Logger) Debugf(
 }
 
 func (logger *Logger) Infof(
-	context *karma.Context,
+	context interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -57,7 +66,7 @@ func (logger *Logger) Infof(
 }
 
 func (logger *Logger) Warningf(
-	err error,
+	err interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -65,7 +74,7 @@ func (logger *Logger) Warningf(
 }
 
 func (logger *Logger) Errorf(
-	err error,
+	err interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -73,7 +82,7 @@ func (logger *Logger) Errorf(
 }
 
 func (logger *Logger) Fatalf(
-	err error,
+	err interface{},
 	message string,
 	args ...interface{},
 ) {
@@ -129,6 +138,12 @@ func (logger *Logger) Write(
 	var hierarchy karma.Karma
 
 	switch reason := reason.(type) {
+	case wrapper:
+		hierarchy = reason.Format(reason.error, message, args...)
+
+	case karma.Karma:
+		hierarchy = karma.Format(reason, message, args...)
+
 	case karma.Hierarchical:
 		hierarchy = karma.Format(reason, message, args...)
 
