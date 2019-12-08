@@ -22,6 +22,20 @@ func NewLogger(output *lorg.Log) *Logger {
 	return &Logger{output, nil, nil}
 }
 
+func (logger *Logger) NewChild() *Logger {
+	child := NewLogger(logger.Log.NewChild())
+	child.SetSender(logger.sender)
+	child.SetDisplayer(logger.displayer)
+	return child
+}
+
+func (logger *Logger) NewChildWithPrefix(prefix string) *Logger {
+	child := NewLogger(logger.Log.NewChildWithPrefix(prefix))
+	child.SetSender(logger.sender)
+	child.SetDisplayer(logger.displayer)
+	return child
+}
+
 // SetSender sets given function as callack for every log line
 func (logger *Logger) SetSender(sender Sender) {
 	logger.sender = sender
