@@ -3,23 +3,31 @@ package cog // import "github.com/reconquest/cog"
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/kovetskiy/lorg"
 	"github.com/reconquest/karma-go"
 )
 
-type Sender func(lorg.Level, karma.Hierarchical) error
-type Displayer func(lorg.Level, karma.Hierarchical)
+type (
+	Sender    func(lorg.Level, karma.Hierarchical) error
+	Displayer func(lorg.Level, karma.Hierarchical)
+	Exiter    func(int)
+)
 
 // Logger provides structured logging methods, based on karma package.
 type Logger struct {
 	*lorg.Log
 	sender    Sender
 	displayer Displayer
+	exiter    Exiter
+	exitcode  *int
 }
 
 func NewLogger(output *lorg.Log) *Logger {
-	return &Logger{output, nil, nil}
+	logger := &Logger{Log: output}
+	output.SetExiter(logger.handleExit)
+	return logger
 }
 
 func (logger *Logger) NewChild() *Logger {
@@ -33,6 +41,7 @@ func (logger *Logger) NewChildWithPrefix(prefix string) *Logger {
 	child := NewLogger(logger.Log.NewChildWithPrefix(prefix))
 	child.SetSender(logger.sender)
 	child.SetDisplayer(logger.displayer)
+	child.SetExiter(logger.exiter)
 	return child
 }
 
@@ -41,9 +50,17 @@ func (logger *Logger) SetSender(sender Sender) {
 	logger.sender = sender
 }
 
+func (logger *Logger) SetExiter(exiter func(int)) {
+	logger.exiter = exiter
+}
+
 // SetDisplayer sets given function as callack when displays log line
 func (logger *Logger) SetDisplayer(display Displayer) {
 	logger.displayer = display
+}
+
+func (logger *Logger) handleExit(code int) {
+	logger.exitcode = &code
 }
 
 func (logger *Logger) Tracef(
@@ -155,12 +172,21 @@ func (logger *Logger) Write(
 	}
 
 	logger.Display(level, hierarchy)
+
 	err := logger.Send(level, hierarchy)
 	if err != nil {
 		logger.Display(
 			lorg.LevelError,
 			karma.Format(err, "error while sending log"),
 		)
+	}
+
+	if logger.exitcode != nil {
+		if logger.exiter != nil {
+			logger.exiter(*logger.exitcode)
+		} else {
+			os.Exit(*logger.exitcode)
+		}
 	}
 }
 
