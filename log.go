@@ -114,37 +114,72 @@ func (logger *Logger) Fatalf(
 func (logger *Logger) Trace(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelTrace, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelTrace, args...)
 }
 
 func (logger *Logger) Debug(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelDebug, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelDebug, args...)
 }
 
 func (logger *Logger) Info(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelInfo, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelInfo, args...)
 }
 
 func (logger *Logger) Warning(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelWarning, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelWarning, args...)
 }
 
 func (logger *Logger) Error(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelError, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelError, args...)
 }
 
 func (logger *Logger) Fatal(
 	args ...interface{},
 ) {
-	logger.Write(lorg.LevelFatal, nil, "%s", fmt.Sprint(args...))
+	logger.write(lorg.LevelFatal, args...)
+}
+
+func (logger *Logger) write(level lorg.Level, args ...interface{}) {
+	if len(args) == 0 {
+		return
+	}
+
+	if logger == nil {
+		return
+	}
+
+	var hierarchy karma.Hierarchical
+
+	arg0, isKarma := args[0].(karma.Hierarchical)
+	if isKarma {
+		hierarchy = arg0
+	}
+
+	if len(args) > 1 || !isKarma {
+		reason := hierarchy
+
+		var message string
+		if isKarma {
+			message = fmt.Sprint(args[1:]...)
+		} else {
+			message = fmt.Sprint(args...)
+		}
+
+		hierarchy = karma.Karma{
+			Reason:  reason,
+			Message: message,
+		}
+	}
+
+	logger.displaySend(level, hierarchy)
 }
 
 func (logger *Logger) Write(
@@ -157,20 +192,29 @@ func (logger *Logger) Write(
 		return
 	}
 
-	var hierarchy karma.Karma
+	var hierarchy karma.Hierarchical
 
 	switch reason := reason.(type) {
 	case karma.Hierarchical:
 		hierarchy = karma.Format(reason, message, args...)
 
 	case *karma.Context:
-		hierarchy = karma.Format(nil, message, args...)
-		hierarchy.Context = reason
+		newHierarchy := karma.Format(nil, message, args...)
+		newHierarchy.Context = reason
+
+		hierarchy = newHierarchy
 
 	default:
 		hierarchy = karma.Format(reason, message, args...)
 	}
 
+	logger.displaySend(level, hierarchy)
+}
+
+func (logger *Logger) displaySend(
+	level lorg.Level,
+	hierarchy karma.Hierarchical,
+) {
 	logger.Display(level, hierarchy)
 
 	err := logger.Send(level, hierarchy)
