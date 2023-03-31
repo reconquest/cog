@@ -1,12 +1,16 @@
 module github.com/reconquest/cog
 
-go 1.16
+go 1.19
 
 require (
-	github.com/BurntSushi/toml v0.4.1 // indirect
-	github.com/kovetskiy/lorg v0.0.0-20200107130803-9a7136a95634
-	github.com/reconquest/karma-go v0.0.0-20200928103525-22da92476de6
-	github.com/stretchr/testify v1.7.0
+	github.com/kovetskiy/lorg v1.2.0
+	github.com/reconquest/karma-go v0.0.0-20220904173930-21741aa386a6
+	github.com/stretchr/testify v1.8.2
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/zazab/zhash v0.0.0-20210630080733-6e809466f8d3 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
